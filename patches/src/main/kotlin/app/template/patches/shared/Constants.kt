@@ -1542,7 +1542,13 @@ val TELEGRAM_COMPATIBILITY = Compatibility(
         packageName = "org.telegram.messenger",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x2CA5E0,
-        targets = listOf(AppTarget(version = "12.10.1", versionCode = 70382))
+        // 13.2.2: version only, no versionCode pin — the Play build's exact
+        // versionCode was not verifiable from a trusted source (only the
+        // .web build's 73039 was), and a wrong pin would block patching.
+        // NOTE: only Anti-delete messages was re-verified for 13.2.2 so far;
+        // the other Telegram patches still carry 12.10.1 fingerprints and
+        // will fail the same way until they are re-mapped (see PATCHES.md).
+        targets = listOf(AppTarget(version = "13.2.2"))
     )
 
 val TELEGRAM_PLUS_COMPATIBILITY = Compatibility(
@@ -1558,7 +1564,9 @@ val TELEGRAM_WEB_COMPATIBILITY = Compatibility(
         packageName = "org.telegram.messenger.web",
         apkFileType = ApkFileType.APK,
         appIconColor = 0x2CA5E0,
-        targets = listOf(AppTarget(version = "12.10.1", versionCode = 70389))
+        // 13.2.2, versionCode 73039 — verified from the official APK
+        // (telegram.org). Same 13.2.2 caveat as TELEGRAM_COMPATIBILITY above.
+        targets = listOf(AppTarget(version = "13.2.2", versionCode = 73039))
     )
 
 val THE_ATHLETIC_COMPATIBILITY = Compatibility(
