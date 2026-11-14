@@ -8,11 +8,14 @@ import app.template.patches.shared.Constants.TELEGRAM_PLUS_COMPATIBILITY
 import app.template.patches.shared.Constants.TELEGRAM_WEB_COMPATIBILITY
 import app.template.patches.telegram.DeleteMessagesByPushFingerprint
 import app.template.patches.telegram.DeleteMessagesByPushFingerprint_13_2_2
+import app.template.patches.telegram.DeleteMessagesByPushFingerprint_13_2_2_Play
 import app.template.patches.telegram.MarkMessagesAsDeletedFingerprint1
 import app.template.patches.telegram.MarkMessagesAsDeletedFingerprint2
 import app.template.patches.telegram.MarkMessagesAsDeletedFingerprint2_13_2_2
+import app.template.patches.telegram.MarkMessagesAsDeletedFingerprint2_13_2_2_Play
 import app.template.patches.telegram.NotificationsControllerRemoveDeletedMessagesFingerprint
 import app.template.patches.telegram.NotificationsControllerRemoveDeletedMessagesFingerprint_13_2_2
+import app.template.patches.telegram.NotificationsControllerRemoveDeletedMessagesFingerprint_13_2_2_Play
 
 @Suppress("unused")
 val telegramAntiDeletePatch = bytecodePatch(
@@ -24,7 +27,11 @@ val telegramAntiDeletePatch = bytecodePatch(
 
     execute {
         // 13.2.2 fingerprints verified against the official .web APK
-        // (org.telegram.messenger.web, version 13.2.2, versionCode 73039).
+        // (org.telegram.messenger.web, version 13.2.2, versionCode 73039) and
+        // the official Play APK (org.telegram.messenger, version 13.2.2,
+        // versionCode 73031, APKMirror). NOTE: the R8 mapping differs between
+        // the two 13.2.2 builds, so each target is probed Play-first, then
+        // .web, then 12.x.
         // markMessagesAsDeleted(JIZZ) — p4=Z is the async/local-only flag.
         // true = user-initiated local delete (allow); false = server-push delete (block).
         // 12.x only: the (JIZZ) overload does not exist in official 13.2.2,
@@ -39,9 +46,11 @@ val telegramAntiDeletePatch = bytecodePatch(
         """)
 
         // markMessagesAsDeleted(JArrayListZZII) — p4=Z same semantics.
-        // 13.2.2 first (ds.P0, same signature, p4 is still useQueue),
-        // 12.x fallback. Loud failure if neither generation matches.
-        (MarkMessagesAsDeletedFingerprint2_13_2_2.methodOrNull
+        // 13.2.2 Play first (is.P0), then .web (ds.P0), same signature,
+        // p4 is still useQueue; 12.x fallback. Loud failure if no
+        // generation matches.
+        (MarkMessagesAsDeletedFingerprint2_13_2_2_Play.methodOrNull
+            ?: MarkMessagesAsDeletedFingerprint2_13_2_2.methodOrNull
             ?: MarkMessagesAsDeletedFingerprint2.method).addInstructions(0, """
             if-nez p4, :allow
             const/4 v0, 0x0
@@ -51,14 +60,18 @@ val telegramAntiDeletePatch = bytecodePatch(
         """)
 
         // Block server-push deletion path entirely
-        // 13.2.2: sp.c0(JJArrayList), 12.x: deleteMessagesByPush(JArrayListJ).
-        (DeleteMessagesByPushFingerprint_13_2_2.methodOrNull
+        // 13.2.2 Play: wp.c0(JJArrayList), .web: sp.c0(JJArrayList),
+        // 12.x: deleteMessagesByPush(JArrayListJ).
+        (DeleteMessagesByPushFingerprint_13_2_2_Play.methodOrNull
+            ?: DeleteMessagesByPushFingerprint_13_2_2.methodOrNull
             ?: DeleteMessagesByPushFingerprint.method).addInstructions(0, "return-void")
 
         // Suppress notification removal when messages are deleted server-side
         // Sig changed in 12.9.2: (LongSparseArray, Z)V
-        // 13.2.2: kt.M(La0/h;, Z), 12.x: removeDeletedMessagesFromNotifications.
-        (NotificationsControllerRemoveDeletedMessagesFingerprint_13_2_2.methodOrNull
+        // 13.2.2 Play: nt.M(La0/h;, Z), .web: kt.M(La0/h;, Z),
+        // 12.x: removeDeletedMessagesFromNotifications.
+        (NotificationsControllerRemoveDeletedMessagesFingerprint_13_2_2_Play.methodOrNull
+            ?: NotificationsControllerRemoveDeletedMessagesFingerprint_13_2_2.methodOrNull
             ?: NotificationsControllerRemoveDeletedMessagesFingerprint.method).addInstructions(0, "return-void")
     }
 }
