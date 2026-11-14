@@ -1,3 +1,10 @@
+## [1.23.3](https://github.com/meowhubdbg/morphe-patches/compare/v1.23.2...v1.23.3) (2026-11-14)
+
+### 🐛 Bug Fixes
+
+* support Telegram 13.2.2 Play build in Anti-delete messages ([3ed05b7](https://github.com/meowhubdbg/morphe-patches/commit/3ed05b7947e668a9c2813123e398d156281d8a75))
+* support Telegram 13.2.2 Play build in Anti-delete messages ([4701847](https://github.com/meowhubdbg/morphe-patches/commit/4701847d155185bb32c4f7ef7258fd1b2e4db08f))
+
 ## [1.23.2](https://github.com/meowhubdbg/morphe-patches/compare/v1.23.1...v1.23.2) (2026-11-14)
 
 ### 🐛 Bug Fixes
