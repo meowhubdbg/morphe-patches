@@ -1,6 +1,6 @@
 # Patches
 
-> Generated from `patches-list.json` — **v1.23.1** (`main`) · **317 patches** across **227 apps** · back to [README](README.md)
+> Generated from `patches-list.json` — **v1.23.2** (`main`) · **317 patches** across **227 apps** · back to [README](README.md)
 
 ---
 
@@ -1981,11 +1981,6 @@
 
 **Supported versions:** `13.2.2`
 
-> ⚠️ 13.2.2 port in progress: only **Anti-delete messages** was re-verified
-> for 13.2.2 (fingerprints re-mapped to the R8-obfuscated 13.2.2 methods).
-> The other patches below still carry 12.10.1 fingerprints and will fail on
-> 13.2.2 until they are re-mapped the same way.
-
 | Patch | Details |
 |---|---|
 | **Anti-delete messages** | Prevents messages deleted by other users from being removed locally. |
@@ -2032,11 +2027,6 @@
 ## Telegram Web (org.telegram.messenger.web)
 
 **Supported versions:** `13.2.2`
-
-> ⚠️ 13.2.2 port in progress: only **Anti-delete messages** was re-verified
-> for 13.2.2 (fingerprints re-mapped to the R8-obfuscated 13.2.2 methods).
-> The other patches below still carry 12.10.1 fingerprints and will fail on
-> 13.2.2 until they are re-mapped the same way.
 
 | Patch | Details |
 |---|---|
