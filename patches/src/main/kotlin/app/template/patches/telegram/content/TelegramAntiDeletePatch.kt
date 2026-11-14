@@ -23,6 +23,8 @@ val telegramAntiDeletePatch = bytecodePatch(
     dependsOn(telegramSpoofDependency())
 
     execute {
+        // 13.2.2 fingerprints verified against the official .web APK
+        // (org.telegram.messenger.web, version 13.2.2, versionCode 73039).
         // markMessagesAsDeleted(JIZZ) — p4=Z is the async/local-only flag.
         // true = user-initiated local delete (allow); false = server-push delete (block).
         // 12.x only: the (JIZZ) overload does not exist in official 13.2.2,
