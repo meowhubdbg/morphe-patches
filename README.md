@@ -290,9 +290,9 @@ Bug reports must include:
 | 191 | [**Super File**](PATCHES.md#super-file-comesuperfileexplorer) | 1 | `1.5.6.3` | [`com.esuper.file.explorer`](https://play.google.com/store/apps/details?id=com.esuper.file.explorer) |
 | 192 | [**Tag Tracker**](PATCHES.md#tag-tracker-commakeevappstagtracker) | 1 | `1.3.2` | [`com.makeevapps.tagtracker`](https://play.google.com/store/apps/details?id=com.makeevapps.tagtracker) |
 | 193 | [**Teams**](PATCHES.md#teams-commicrosoftteams) | 2 | `1416/1.0.0.2026152302` | [`com.microsoft.teams`](https://play.google.com/store/apps/details?id=com.microsoft.teams) |
-| 194 | [**Telegram**](PATCHES.md#telegram-orgtelegrammessenger) | 14 | `12.10.1` | [`org.telegram.messenger`](https://play.google.com/store/apps/details?id=org.telegram.messenger) |
+| 194 | [**Telegram**](PATCHES.md#telegram-orgtelegrammessenger) | 14 | `13.2.2` | [`org.telegram.messenger`](https://play.google.com/store/apps/details?id=org.telegram.messenger) |
 | 195 | [**Telegram Plus**](PATCHES.md#telegram-plus-orgtelegramplus) | 15 | `12.10.1.1` | [`org.telegram.plus`](https://play.google.com/store/apps/details?id=org.telegram.plus) |
-| 196 | [**Telegram Web**](PATCHES.md#telegram-web-orgtelegrammessengerweb) | 14 | `12.10.1` | [`org.telegram.messenger.web`](https://play.google.com/store/apps/details?id=org.telegram.messenger.web) |
+| 196 | [**Telegram Web**](PATCHES.md#telegram-web-orgtelegrammessengerweb) | 14 | `13.2.2` | [`org.telegram.messenger.web`](https://play.google.com/store/apps/details?id=org.telegram.messenger.web) |
 | 197 | [**The Athletic**](PATCHES.md#the-athletic-comtheathletic) | 1 | `13.153.0` | [`com.theathletic`](https://play.google.com/store/apps/details?id=com.theathletic) |
 | 198 | [**The Weather Channel**](PATCHES.md#the-weather-channel-comweatherweather) | 1 | `16.26.0` | [`com.weather.Weather`](https://play.google.com/store/apps/details?id=com.weather.Weather) |
 | 199 | [**Today Weather**](PATCHES.md#today-weather-mobilockdownweather) | 1 | `2.5.0-6` | [`mobi.lockdown.weather`](https://play.google.com/store/apps/details?id=mobi.lockdown.weather) |
