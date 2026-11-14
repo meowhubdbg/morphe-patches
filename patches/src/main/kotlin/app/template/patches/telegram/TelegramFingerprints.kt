@@ -14,6 +14,9 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 // Verified against: Telegram Web 12.9.2 (69919), TelegramPlus 12.9.0.1 (22437)
 // All class names non-obfuscated — stable across Telegram forks.
 // AccessFlags omitted where Web/Plus differ (e.g. protected vs public).
+// EXCEPTION — Anti-delete on official Telegram 13.2.2: R8 obfuscates the
+// messenger classes (ds/sp/kt), so the 13.2.2 fingerprints in the Anti-delete
+// section use the obfuscated names (verified against the official 13.2.2 APK).
 // ════════════════════════════════════════════════════════════════════════════════
 
 // ─── Premium ──────────────────────────────────────────────────────────────────
@@ -319,6 +322,23 @@ val CheckCanOpenChat4Fingerprint = Fingerprint(
 )
 
 // ─── Anti-delete ──────────────────────────────────────────────────────────────
+// 12.x fingerprints below use real class/method names — they match the
+// unobfuscated Telegram Web / Telegram Plus forks and official 12.10.1.
+// Official Telegram 13.2.2 obfuscates org.telegram.messenger.* with R8, so
+// name-based fingerprints CANNOT match it (this is what broke Anti-delete on
+// 13.2.2: MessagesStorage/markMessagesAsDeleted no longer exist by name).
+// The 13.2.2 fingerprints use the R8-renamed targets, verified by decompiling
+// the official 13.2.2 APK (org.telegram.messenger.web, versionCode 73039,
+// signature verified) and cross-checked against dex method tables:
+//   MessagesStorage            -> Lorg/telegram/messenger/ds;
+//   MessagesController         -> Lorg/telegram/messenger/sp;
+//   NotificationsController    -> Lorg/telegram/messenger/kt;
+//   androidx.collection.LongSparseArray -> La0/h;
+// Each 13.2.2 signature is unique in its class (exactly one method matches).
+// The patch resolves 13.2.2 first and falls back to 12.x, so one patch serves
+// both generations. Fingerprint1 has NO 13.2.2 equivalent: the
+// markMessagesAsDeleted(JIZZ) overload does not exist in 13.2.2's ds class
+// at all (only used by the clear-history push path in 12.x) — known gap.
 
 val MarkMessagesAsDeletedFingerprint1 = Fingerprint(
     definingClass = "Lorg/telegram/messenger/MessagesStorage;",
@@ -334,6 +354,16 @@ val MarkMessagesAsDeletedFingerprint2 = Fingerprint(
     parameters = listOf("J", "Ljava/util/ArrayList;", "Z", "Z", "I", "I"),
 )
 
+// 13.2.2: MessagesStorage.markMessagesAsDeleted(J, ArrayList, Z, Z, I, I)
+// is ds.P0 — identical signature, only the names are R8-renamed.
+// p4 is still useQueue, so the patch's guard injection is unchanged.
+val MarkMessagesAsDeletedFingerprint2_13_2_2 = Fingerprint(
+    definingClass = "Lorg/telegram/messenger/ds;",
+    name = "P0",
+    returnType = "Ljava/util/ArrayList;",
+    parameters = listOf("J", "Ljava/util/ArrayList;", "Z", "Z", "I", "I"),
+)
+
 // Web: protected; Plus: public. Omit accessFlags.
 val DeleteMessagesByPushFingerprint = Fingerprint(
     definingClass = "Lorg/telegram/messenger/MessagesController;",
@@ -342,11 +372,32 @@ val DeleteMessagesByPushFingerprint = Fingerprint(
     parameters = listOf("J", "Ljava/util/ArrayList;", "J"),
 )
 
+// 13.2.2: MessagesController.deleteMessagesByPush(J, ArrayList, J) is
+// sp.c0(J, J, ArrayList) — same three values, reordered to
+// (dialogId, channelId, ids). Body still posts the delete runnable to the
+// storage queue, so return-void at entry still blocks the whole push path.
+val DeleteMessagesByPushFingerprint_13_2_2 = Fingerprint(
+    definingClass = "Lorg/telegram/messenger/sp;",
+    name = "c0",
+    returnType = "V",
+    parameters = listOf("J", "J", "Ljava/util/ArrayList;"),
+)
+
 val NotificationsControllerRemoveDeletedMessagesFingerprint = Fingerprint(
     definingClass = "Lorg/telegram/messenger/NotificationsController;",
     name = "removeDeletedMessagesFromNotifications",
     returnType = "V",
     parameters = listOf("Landroidx/collection/LongSparseArray;", "Z"),
+)
+
+// 13.2.2: NotificationsController.removeDeletedMessagesFromNotifications
+// (LongSparseArray, Z) is kt.M(La0/h;, Z) — a0.h is the R8-renamed
+// androidx.collection.LongSparseArray (long[] + Object[] fields, Cloneable).
+val NotificationsControllerRemoveDeletedMessagesFingerprint_13_2_2 = Fingerprint(
+    definingClass = "Lorg/telegram/messenger/kt;",
+    name = "M",
+    returnType = "V",
+    parameters = listOf("La0/h;", "Z"),
 )
 
 // ─── Anti-disappearing media ──────────────────────────────────────────────────
