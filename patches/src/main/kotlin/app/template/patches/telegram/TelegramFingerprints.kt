@@ -328,17 +328,25 @@ val CheckCanOpenChat4Fingerprint = Fingerprint(
 // name-based fingerprints CANNOT match it (this is what broke Anti-delete on
 // 13.2.2: MessagesStorage/markMessagesAsDeleted no longer exist by name).
 // The 13.2.2 fingerprints use the R8-renamed targets, verified by decompiling
-// the official 13.2.2 APK (org.telegram.messenger.web, versionCode 73039,
-// signature verified) and cross-checked against dex method tables:
-//   MessagesStorage            -> Lorg/telegram/messenger/ds;
-//   MessagesController         -> Lorg/telegram/messenger/sp;
-//   NotificationsController    -> Lorg/telegram/messenger/kt;
-//   androidx.collection.LongSparseArray -> La0/h;
+// the official 13.2.2 APKs (signature verified) and cross-checked against dex
+// method tables. WARNING: the R8 mapping is NOT the same in the two 13.2.2
+// builds — same version, same signatures and method bodies, but different
+// renamed classes. That is why v1.23.2 (which only had the .web mapping)
+// still failed on the Play build:
+//   .web (org.telegram.messenger.web, versionCode 73039):
+//     MessagesStorage            -> Lorg/telegram/messenger/ds;
+//     MessagesController         -> Lorg/telegram/messenger/sp;
+//     NotificationsController    -> Lorg/telegram/messenger/kt;
+//   Play (org.telegram.messenger, versionCode 73031, APKMirror):
+//     MessagesStorage            -> Lorg/telegram/messenger/is;
+//     MessagesController         -> Lorg/telegram/messenger/wp;
+//     NotificationsController    -> Lorg/telegram/messenger/nt;
+//   androidx.collection.LongSparseArray -> La0/h; (same in both builds).
 // Each 13.2.2 signature is unique in its class (exactly one method matches).
-// The patch resolves 13.2.2 first and falls back to 12.x, so one patch serves
-// both generations. Fingerprint1 has NO 13.2.2 equivalent: the
-// markMessagesAsDeleted(JIZZ) overload does not exist in 13.2.2's ds class
-// at all (only used by the clear-history push path in 12.x) — known gap.
+// The patch resolves Play 13.2.2 first, then .web 13.2.2, then 12.x, so one
+// patch serves all generations. Fingerprint1 has NO 13.2.2 equivalent: the
+// markMessagesAsDeleted(JIZZ) overload does not exist in 13.2.2 in either
+// build (only used by the clear-history push path in 12.x) — known gap.
 
 val MarkMessagesAsDeletedFingerprint1 = Fingerprint(
     definingClass = "Lorg/telegram/messenger/MessagesStorage;",
@@ -354,11 +362,21 @@ val MarkMessagesAsDeletedFingerprint2 = Fingerprint(
     parameters = listOf("J", "Ljava/util/ArrayList;", "Z", "Z", "I", "I"),
 )
 
-// 13.2.2: MessagesStorage.markMessagesAsDeleted(J, ArrayList, Z, Z, I, I)
+// 13.2.2 .web: MessagesStorage.markMessagesAsDeleted(J, ArrayList, Z, Z, I, I)
 // is ds.P0 — identical signature, only the names are R8-renamed.
 // p4 is still useQueue, so the patch's guard injection is unchanged.
 val MarkMessagesAsDeletedFingerprint2_13_2_2 = Fingerprint(
     definingClass = "Lorg/telegram/messenger/ds;",
+    name = "P0",
+    returnType = "Ljava/util/ArrayList;",
+    parameters = listOf("J", "Ljava/util/ArrayList;", "Z", "Z", "I", "I"),
+)
+
+// 13.2.2 Play: same method, same body (if (!z10) return Q0(...) else post
+// to the storage queue), but MessagesStorage is is, not ds — verified in
+// the Play dex method tables (unique match) and jadx decompilation.
+val MarkMessagesAsDeletedFingerprint2_13_2_2_Play = Fingerprint(
+    definingClass = "Lorg/telegram/messenger/is;",
     name = "P0",
     returnType = "Ljava/util/ArrayList;",
     parameters = listOf("J", "Ljava/util/ArrayList;", "Z", "Z", "I", "I"),
@@ -372,12 +390,23 @@ val DeleteMessagesByPushFingerprint = Fingerprint(
     parameters = listOf("J", "Ljava/util/ArrayList;", "J"),
 )
 
-// 13.2.2: MessagesController.deleteMessagesByPush(J, ArrayList, J) is
+// 13.2.2 .web: MessagesController.deleteMessagesByPush(J, ArrayList, J) is
 // sp.c0(J, J, ArrayList) — same three values, reordered to
 // (dialogId, channelId, ids). Body still posts the delete runnable to the
 // storage queue, so return-void at entry still blocks the whole push path.
 val DeleteMessagesByPushFingerprint_13_2_2 = Fingerprint(
     definingClass = "Lorg/telegram/messenger/sp;",
+    name = "c0",
+    returnType = "V",
+    parameters = listOf("J", "J", "Ljava/util/ArrayList;"),
+)
+
+// 13.2.2 Play: same method as .web sp.c0 (posts the kk runnable, which
+// calls is.P0), but MessagesController is wp, not sp — verified via the
+// static volatile [Lwp; Instance array, BaseController superclass, and
+// jadx decompilation.
+val DeleteMessagesByPushFingerprint_13_2_2_Play = Fingerprint(
+    definingClass = "Lorg/telegram/messenger/wp;",
     name = "c0",
     returnType = "V",
     parameters = listOf("J", "J", "Ljava/util/ArrayList;"),
@@ -390,11 +419,21 @@ val NotificationsControllerRemoveDeletedMessagesFingerprint = Fingerprint(
     parameters = listOf("Landroidx/collection/LongSparseArray;", "Z"),
 )
 
-// 13.2.2: NotificationsController.removeDeletedMessagesFromNotifications
+// 13.2.2 .web: NotificationsController.removeDeletedMessagesFromNotifications
 // (LongSparseArray, Z) is kt.M(La0/h;, Z) — a0.h is the R8-renamed
 // androidx.collection.LongSparseArray (long[] + Object[] fields, Cloneable).
 val NotificationsControllerRemoveDeletedMessagesFingerprint_13_2_2 = Fingerprint(
     definingClass = "Lorg/telegram/messenger/kt;",
+    name = "M",
+    returnType = "V",
+    parameters = listOf("La0/h;", "Z"),
+)
+
+// 13.2.2 Play: same method (posts to the notification queue), but
+// NotificationsController is nt, not kt — verified via the static volatile
+// [Lnt; Instance array, the NotificationManager static field, and jadx.
+val NotificationsControllerRemoveDeletedMessagesFingerprint_13_2_2_Play = Fingerprint(
+    definingClass = "Lorg/telegram/messenger/nt;",
     name = "M",
     returnType = "V",
     parameters = listOf("La0/h;", "Z"),
